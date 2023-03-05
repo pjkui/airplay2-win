@@ -59,7 +59,7 @@ bool CSDLPlayer::init()
 	SDL_EventState(SDL_MOUSEMOTION, SDL_IGNORE);
 	SDL_EventState(SDL_MOUSEBUTTONDOWN, SDL_IGNORE);
 
-	initVideo(600, 400);
+	initVideo(1920, 1080);
 
 	/* Filter quit and mouse motion events */
 	SDL_SetEventFilter(FilterEvents);
@@ -99,6 +99,10 @@ void CSDLPlayer::loopEvents()
 		case SDL_VIDEOEXPOSE: {
 			break;
 		}
+		case SDL_VIDEORESIZE: {
+			printf("win resize: w:%d h%d", event.resize.w, event.resize.h);
+			break;
+		}
 		case SDL_ACTIVEEVENT: {
 			if (event.active.state & SDL_APPACTIVE) {
 				if (event.active.gain) {
@@ -123,6 +127,11 @@ void CSDLPlayer::loopEvents()
 					printf("key down");
 					m_server.start(this);
 					SDL_WM_SetCaption("AirPlay Demo - Started [s - start server, q - stop server]", NULL);
+					break;
+				}
+				case SDLK_f: {
+					printf("key down");
+					toggleFullScreen();
 					break;
 				}
 				case SDLK_EQUALS: {
@@ -238,7 +247,12 @@ void CSDLPlayer::outputAudio(SFgAudioFrame* data)
 void CSDLPlayer::initVideo(int width, int height)
 {
 	// 0x115
-	m_surface = SDL_SetVideoMode(width, height, 0, SDL_SWSURFACE);
+	Uint32 flag = SDL_SWSURFACE | SDL_RESIZABLE;
+	if (full_screen_)
+	{
+		flag |= SDL_FULLSCREEN;
+	}
+	m_surface = SDL_SetVideoMode(width, height, 0, flag);
 	SDL_WM_SetCaption("AirPlay Demo [s - start server, q - stop server]", NULL);
 
 	{
@@ -255,6 +269,12 @@ void CSDLPlayer::initVideo(int width, int height)
 
 		SDL_DisplayYUVOverlay(m_yuv, &m_rect);
 	}
+}
+
+void CSDLPlayer::toggleFullScreen()
+{
+	full_screen_ = !full_screen_;
+	initVideo(m_rect.w, m_rect.h);
 }
 
 void CSDLPlayer::unInitVideo()

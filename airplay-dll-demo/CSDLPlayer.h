@@ -58,5 +58,8 @@ public:
 
 	CAirServer m_server;
 	float m_fRatio;
+private:
+	void toggleFullScreen();
+	bool full_screen_ = false;
 };
 
